@@ -9,7 +9,7 @@ fx_version "cerulean"
 use_experimental_fxv2_oal "yes"
 
 author "Hakko"
-version "3.0.0"
+version "4.0.0"
 license "GPL-v3"
 name "TAM_BetterRadioAnims"
 description "Three Amigos Modding - Better Radio Animations"
