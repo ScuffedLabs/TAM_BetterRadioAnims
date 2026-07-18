@@ -158,9 +158,9 @@ ensure scfd_radioanims
 
 # Credits
 
-Originally developed by Marshular
-Currently maintained & developed by **Scuffed Labs**
-Animations by CrunchyCat - https://www.gta5-mods.com/misc/leo-custom-anim/download/151122
+Originally developed by Marshular  
+Currently maintained & developed by **Scuffed Labs**  
+Animations by CrunchyCat - https://www.gta5-mods.com/misc/leo-custom-anim/download/151122  
 
 - https://scuffedlabs.com
 - https://scuffedlabs.com/discord
