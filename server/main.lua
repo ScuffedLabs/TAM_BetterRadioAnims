@@ -1,37 +1,81 @@
---[[------------------------------------------------------
-----       For Support - discord.gg/threeamigos       ----
----- Do not edit if you do not know what you"re doing ----
---]]------------------------------------------------------
-local config <const> = require 'data.config'
+if not LoadedResource then return end
 
-if not config or not lib then return end
+local CONST <const> = require "shared.const"
+local ANIMATIONS <const> = require "data.animations"
 
-local scully = lib.checkDependency("scully_emotemenu", "2.0.9")
-local rpemotes = lib.checkDependency("rpemotes-reborn", "1.9.0")
-local rpradio = lib.checkDependency("rp-radio", "2.2.1")
+---@type table<integer, integer>
+local cooldowns = {}
 
-lib.print.info("-----------------------------------------------")
-if scully and not rpemotes then
-    lib.print.info("Successfully loaded TAM_BetterRadioAnims")
-    lib.print.info("Successfully loaded scully_emotemenu integration!")
-elseif not scully and rpemotes then
-    lib.print.info("Successfully loaded TAM_BetterRadioAnims")
-    lib.print.info("Successfully loaded rpemotes-reborn integration!")
-else
-    lib.print.info("Loading TAM_BetterRadioAnims Failed!")
-    lib.print.error("rpemotes-reborn or scully_emotemenu is either outdated or missing or both installed. Please update and make sure you only have one of the resources installed and running.")
+---@param source integer
+---@return boolean
+local function isValidPlayer(source)
+    return source > 0 and GetPlayerEndpoint(source) ~= nil
 end
 
-if rpradio then
-    lib.print.error("rp-radio is NOT compatible with this resource and this resource will NOT work with it. Please remove it to use this resource.")
+---@param source integer
+---@return boolean
+local function checkCooldown(source)
+    local now = GetGameTimer()
+    local expiresAt = cooldowns[source]
+
+    if expiresAt and expiresAt > now then
+        return false
+    end
+
+    cooldowns[source] = now + CONST.LIMITS.EVENT_COOLDOWN_MS
+    return true
 end
 
-if config.debug then
-    lib.print.info("Debug mode is enabled!")
+---@param source integer
+---@param animationId string?
+local function setRadioState(source, animationId)
+    local player = Player(source)
+    if not player then return end
+
+    player.state:set(CONST.STATES.RADIO_ANIMATION, animationId or false, true)
 end
 
-lib.print.info("Join our Discord for support: discord.gg/threeamigos")
-lib.print.info("Documentation: docs.threeamigos.shop")
-lib.print.info("-----------------------------------------------")
+RegisterNetEvent("scfd_radioanims:server:setRadioState", function(animationId)
+    local source = source
 
-lib.versionCheck("ThreeAmigosModding/TAM_BetterRadioAnims")
+    if not isValidPlayer(source) or not checkCooldown(source) then
+        return
+    end
+
+    if animationId == false or animationId == nil then
+        setRadioState(source, nil)
+        return
+    end
+
+    if type(animationId) ~= "string" then
+        return
+    end
+
+    if not ANIMATIONS[animationId] then
+        Logger.warn(("Player %s requested invalid radio animation %q"):format(source, animationId))
+
+        setRadioState(source, nil)
+        return
+    end
+
+    local ped = GetPlayerPed(source)
+
+    if ped == 0 or not DoesEntityExist(ped) or IsEntityDead(ped) then
+        setRadioState(source, nil)
+        return
+    end
+
+    setRadioState(source, animationId)
+end)
+
+AddEventHandler("playerDropped", function()
+    cooldowns[source] = nil
+end)
+
+AddEventHandler("onResourceStop", function(resourceName)
+    if resourceName ~= cache.resource then return end
+
+    for _, playerId in ipairs(GetPlayers()) do
+        setRadioState(tonumber(playerId), nil)
+    end
+end)

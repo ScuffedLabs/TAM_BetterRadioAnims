@@ -1,45 +1,51 @@
 --[[------------------------------------------------------
-----       For Support - discord.gg/threeamigos       ----
----- Do not edit if you do not know what you"re doing ----
---]]------------------------------------------------------
-
-game "gta5"
-lua54 "yes"
+----          Discord - discord.gg/YzC4Du7WYm         ----
+----       Docs - https://docs.scuffedlabs.com        ----
+---- Do not edit if you do not know what you're doing ----
+--]] ------------------------------------------------------
 fx_version "cerulean"
 use_experimental_fxv2_oal "yes"
+lua54 "yes"
+game "gta5"
 
-author "Hakko"
-version "4.0.0"
-license "GPL-v3"
-name "TAM_BetterRadioAnims"
-description "Three Amigos Modding - Better Radio Animations"
-repository "https://github.com/threeamigosmodding/TAM_BetterRadioAnims"
+name "scfd_radioanims"
+author "Scuffed Labs"
+website "https://scuffedlabs.com"
+description "Better Radio Animations by Scuffed Labs"
+version "v1.0.0"
 
-client_debug_mode "false"
-server_debug_mode "false"
-experimental_features_enabled "0"
-
-shared_scripts {
-	"@ox_lib/init.lua"
+ox_lib {
+    'locale'
 }
 
 files {
-	"data/**",
-	"locales/**"
+    "data/*",
+    "bridge/**/client.lua",
+    "locales/*.json"
 }
 
-client_script "client/main.lua"
+shared_scripts {
+    "@ox_lib/init.lua",
+    "shared/logger.lua",
+    "shared/const.lua",
+    "init.lua",
+}
 
-server_script "server/main.lua"
+client_scripts {
+    "client/main.lua",
+}
+
+server_scripts {
+    "server/main.lua",
+}
 
 dependencies {
-	"ox_lib",
+    "/gameBuild:3095",
+    "/server:26389",
+    "/onesync",
+    "ox_lib"
 }
 
 escrow_ignore {
-	"client/*.lua",
-	"stream/*",
-	"data/**",
-	"locales/**",
-	"server/*.lua"
+    "**/**",
 }

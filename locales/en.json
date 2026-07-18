@@ -1,28 +1,13 @@
 {
-    "keybind": "Radio Animation Key",
+    "common.title": "Scuffed Labs",
 
-    "commands": {
-        "toggleprops": {
-            "label": "toggleprops",
-            "suggestion": "Toggle wether to use props or clothing in radio animations.",
-            "params": {
-                "bool": {
-                    "label": "bool",
-                    "help": "true/false"
-                }
-            }
-        },
+    "command.radio_keybind": "Use Radio",
+    "command.toggle_props": "Toggle radio prop-component animation mappings",
+    "command.toggle_props_parameter": "true or false",
 
-        "getclothing": {
-            "label": "getclothing"
-        }
-    },
+    "error.invalid_boolean": "The value must be true or false.",
 
-    "notifications": {
-        "title": "Better Radio Animations",
-        "messages": {
-            "toggled": "Props toggled: %s",
-            "copied": "Current clothing copied to clipboard."
-        }
-    }
+    "success.prop_mappings_enabled": "Radio prop mappings enabled.",
+    "success.prop_mappings_disabled": "Radio prop mappings disabled.",
+    "success.clothing_copied": "Clothing and prop data copied to your clipboard."
 }
