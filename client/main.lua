@@ -182,9 +182,40 @@ local function matchesPropComponent(ped, componentId, expected)
 end
 
 ---@param ped integer
----@param clothing table<string, RadioClothingVariation>?
+---@param componentId integer
+---@param expected RadioClothingVariation
 ---@return boolean
-local function matchesClothingSet(ped, clothing)
+local function matchesPedClothingComponent(ped, componentId, expected)
+    local drawable = GetPedDrawableVariation(ped, componentId)
+    local texture = GetPedTextureVariation(ped, componentId)
+
+    return drawable == expected.drawable and (expected.texture == nil or texture == expected.texture)
+end
+
+---@param ped integer
+---@param componentId integer
+---@param expected RadioClothingVariation
+---@return boolean
+local function matchesPedPropComponent(ped, componentId, expected)
+    local drawable = GetPedPropIndex(ped, componentId)
+
+    if expected.clear then
+        return drawable == -1
+    end
+
+    if drawable == -1 then
+        return false
+    end
+
+    local texture = GetPedPropTextureIndex(ped, componentId)
+    return drawable == expected.drawable and (expected.texture == nil or texture == expected.texture)
+end
+
+---@param ped integer
+---@param clothing table<string, RadioClothingVariation>?
+---@param useCollections boolean
+---@return boolean
+local function matchesClothingSet(ped, clothing, useCollections)
     if not clothing then
         return true
     end
@@ -192,13 +223,20 @@ local function matchesClothingSet(ped, clothing)
     for componentName, expected in pairs(clothing) do
         local componentId = CONST.CLOTHING_COMPONENTS[componentName]
 
-        if not componentId then
+        if componentId == nil then
             Logger.warn(("Invalid clothing component configured: %s"):format(componentName))
-
             return false
         end
 
-        if not matchesClothingComponent(ped, componentId, expected) then
+        local matches
+
+        if useCollections then
+            matches = matchesClothingComponent(ped, componentId, expected)
+        else
+            matches = matchesPedClothingComponent(ped, componentId, expected)
+        end
+
+        if not matches then
             return false
         end
     end
@@ -208,8 +246,9 @@ end
 
 ---@param ped integer
 ---@param props table<string, RadioClothingVariation>?
+---@param useCollections boolean
 ---@return boolean
-local function matchesPropSet(ped, props)
+local function matchesPropSet(ped, props, useCollections)
     if not props then
         return true
     end
@@ -219,11 +258,18 @@ local function matchesPropSet(ped, props)
 
         if componentId == nil then
             Logger.warn(("Invalid prop component configured: %s"):format(componentName))
-
             return false
         end
 
-        if not matchesPropComponent(ped, componentId, expected) then
+        local matches
+
+        if useCollections then
+            matches = matchesPropComponent(ped, componentId, expected)
+        else
+            matches = matchesPedPropComponent(ped, componentId, expected)
+        end
+
+        if not matches then
             return false
         end
     end
@@ -232,20 +278,21 @@ local function matchesPropSet(ped, props)
 end
 
 ---@param ped integer
----@param rule RadioClothingRule
+---@param rule RadioAnimationRule
+---@param useCollections boolean
 ---@return boolean
-local function matchesClothingRule(ped, rule)
-    return matchesClothingSet(ped, rule.clothing) and matchesPropSet(ped, rule.props)
+local function matchesAnimationRule(ped, rule, useCollections)
+    return matchesClothingSet(ped, rule.clothing, useCollections) and matchesPropSet(ped, rule.props, useCollections)
 end
 
 ---@param ped integer
+---@param rules RadioAnimationRule[]?
+---@param useCollections boolean
 ---@return string?
-local function findClothingAnimation(ped)
-    local gender = getPedGender(ped)
-    if not gender then return end
-
-    local rules = Config.radio.clothingAnimations[gender]
-    if not rules then return end
+local function findMatchingRule(ped, rules, useCollections)
+    if not rules or #rules == 0 then
+        return
+    end
 
     local sortedRules = {}
 
@@ -260,18 +307,47 @@ local function findClothingAnimation(ped)
     for index = 1, #sortedRules do
         local rule = sortedRules[index]
 
-        if not ANIMATIONS[rule.animation] then
+        if type(rule.animation) ~= "string"
+            or not ANIMATIONS[rule.animation]
+        then
             Logger.warn(("Invalid radio animation configured: %s"):format(tostring(rule.animation)))
-        elseif matchesClothingRule(ped, rule) then
+        elseif matchesAnimationRule(ped, rule, useCollections) then
             return rule.animation
         end
     end
 end
 
 ---@param ped integer
+---@return string?
+local function findPedAnimation(ped)
+    local model = GetEntityModel(ped)
+    local rules = Config.radio.pedAnimations and Config.radio.pedAnimations[model]
+
+    return findMatchingRule(ped, rules, false)
+end
+
+---@param ped integer
+---@return string?
+local function findClothingAnimation(ped)
+    local gender = getPedGender(ped)
+    if not gender then return end
+    local rules = Config.radio.clothingAnimations and Config.radio.clothingAnimations[gender]
+
+    return findMatchingRule(ped, rules, true)
+end
+
+---@param ped integer
 ---@return string
 local function getRadioAnimation(ped)
-    local animationId = findClothingAnimation(ped)
+    local model = GetEntityModel(ped)
+
+    local animationId = findMatchingRule(ped, Config.radio.pedAnimations and Config.radio.pedAnimations[model], false)
+
+    if not animationId then
+        animationId = findClothingAnimation(ped)
+    end
+
+    animationId = animationId
         or Config.radio.defaultAnimation
 
     if IsPlayerFreeAiming(cache.playerId) then
