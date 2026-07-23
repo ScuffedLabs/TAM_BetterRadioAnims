@@ -1,0 +1,11 @@
+---@class RadioClothingVariation
+---@field collection? string
+---@field drawable integer
+---@field texture? integer
+---@field clear? boolean
+
+---@class RadioAnimationRule
+---@field animation string
+---@field priority? integer
+---@field clothing? table<string, RadioClothingVariation>
+---@field props? table<string, RadioClothingVariation>

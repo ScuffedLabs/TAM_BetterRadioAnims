@@ -8,7 +8,7 @@ local config = {}
 config.debug = true
 config.enableVersionCheck = true
 
-radio = {
+config.radio = {
     defaultAnimation = "default",
 
     clothingAnimations = {
@@ -87,6 +87,53 @@ radio = {
             },
         },
     },
+
+    pedAnimations = {
+        [`s_m_y_cop_01`] = {
+            {
+                animation = "radiochest",
+                priority = 100,
+
+                clothing = {
+                    torso2 = {
+                        drawable = 0,
+                        texture = 0,
+                    },
+                },
+            },
+
+            {
+                animation = "earpiece",
+                priority = 90,
+
+                props = {
+                    ears = {
+                        drawable = 1,
+                        texture = 0,
+                    },
+                },
+            },
+
+            {
+                animation = "wt4",
+                priority = 10,
+            },
+        },
+
+        [`s_f_y_cop_01`] = {
+            {
+                animation = "earpiece",
+                priority = 100,
+
+                clothing = {
+                    kevlar = {
+                        drawable = 1,
+                    },
+                },
+            },
+        },
+    },
 }
+
 
 return config
